@@ -139,7 +139,7 @@ struct DocumentListView: View {
                 isSelected: selectedDocumentIDs.contains(document.id)
             )
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PressableButtonStyle())
         .contextMenu {
             Button {
                 Task { await sharePDFs(for: [document]) }
@@ -170,6 +170,7 @@ struct DocumentListView: View {
                 .clipShape(Circle())
                 .shadow(color: Color.accentColor.opacity(0.45), radius: 12, y: 6)
         }
+        .buttonStyle(PressableButtonStyle())
         .padding(24)
     }
 
@@ -191,11 +192,22 @@ struct DocumentListView: View {
             }
             Text("No Documents Yet")
                 .font(.headline)
-            Text("Tap the camera button to scan your first document.")
+            Text("Scan your first document to get started.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 40)
+
+            Button(action: startScan) {
+                Label("Scan a Document", systemImage: "camera.fill")
+                    .font(.subheadline.weight(.semibold))
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .background(Color.accentColor, in: Capsule())
+                    .foregroundStyle(.white)
+            }
+            .buttonStyle(PressableButtonStyle())
+            .padding(.top, 4)
         }
     }
 
@@ -212,6 +224,7 @@ struct DocumentListView: View {
             isShowingUnsupportedAlert = true
             return
         }
+        Haptics.impact(.medium)
         isShowingScanner = true
     }
 
@@ -239,6 +252,7 @@ struct DocumentListView: View {
             document.pages.append(documentPage)
         }
         modelContext.insert(document)
+        Haptics.success()
     }
 
     private func deleteSelected() {

@@ -5,7 +5,7 @@ import SwiftUI
 struct EditablePage: Identifiable {
     let id = UUID()
     var image: UIImage
-    var filter: ImageFilterType = .original
+    var filter: ImageFilterType = .auto
 }
 
 struct DocumentEditorView: View {
@@ -56,6 +56,7 @@ struct DocumentEditorView: View {
                     } label: {
                         Label("Crop & Rotate", systemImage: "crop.rotate")
                     }
+                    .buttonStyle(PressableButtonStyle())
                     .disabled(selectedPage == nil)
 
                     Spacer()
@@ -65,6 +66,7 @@ struct DocumentEditorView: View {
                     } label: {
                         Label("Add Pages", systemImage: "camera")
                     }
+                    .buttonStyle(PressableButtonStyle())
                 }
             }
             .padding()

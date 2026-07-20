@@ -5,6 +5,7 @@ import CoreImage.CIFilterBuiltins
 
 enum ImageFilterType: String, CaseIterable, Identifiable {
     case original
+    case auto
     case blackAndWhite
     case enhanced
     case grayscale
@@ -14,6 +15,7 @@ enum ImageFilterType: String, CaseIterable, Identifiable {
     var displayName: String {
         switch self {
         case .original: return "Original"
+        case .auto: return "Auto"
         case .blackAndWhite: return "B&W"
         case .enhanced: return "Enhanced"
         case .grayscale: return "Grayscale"
@@ -31,6 +33,8 @@ enum ImageFilterEngine {
         switch filter {
         case .original:
             outputImage = ciImage
+        case .auto:
+            outputImage = autoFilter(ciImage)
         case .blackAndWhite:
             outputImage = blackAndWhiteFilter(ciImage)
         case .enhanced:
@@ -44,6 +48,19 @@ enum ImageFilterEngine {
             return image
         }
         return UIImage(cgImage: cgImage, scale: image.scale, orientation: .up)
+    }
+
+    // Apple의 공개 자동보정 API(Photos 앱 원터치 보정과 동일 계열)로 노출·하이라이트·그림자를 자동 교정
+    private static func autoFilter(_ image: CIImage) -> CIImage? {
+        let filters = image.autoAdjustmentFilters(options: [.enhance: true])
+        var output = image
+        for filter in filters {
+            filter.setValue(output, forKey: kCIInputImageKey)
+            if let result = filter.outputImage {
+                output = result
+            }
+        }
+        return output
     }
 
     // 문서 텍스트만 선명하게 남기고 그림자·손자국 잡음을 날리는 고대비 흑백 필터
