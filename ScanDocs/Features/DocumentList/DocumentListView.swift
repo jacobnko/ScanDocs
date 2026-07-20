@@ -12,15 +12,23 @@ struct DocumentListView: View {
     @State private var isShowingEditor = false
     @State private var pagesPendingEdit: [UIImage] = []
     @State private var searchText = ""
+    @State private var editMode: EditMode = .inactive
+    @State private var selectedDocumentIDs = Set<UUID>()
+    @State private var isShowingShareSheet = false
+    @State private var shareItems: [Any] = []
 
+    // 제목뿐 아니라 OCR로 추출해둔 페이지 본문 텍스트까지 검색 대상에 포함
     private var filteredDocuments: [ScannedDocument] {
         guard !searchText.isEmpty else { return documents }
-        return documents.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
+        return documents.filter { document in
+            document.title.localizedCaseInsensitiveContains(searchText) ||
+            document.pages.contains { ($0.recognizedText ?? "").localizedCaseInsensitiveContains(searchText) }
+        }
     }
 
     var body: some View {
         NavigationStack {
-            List {
+            List(selection: $selectedDocumentIDs) {
                 ForEach(filteredDocuments) { document in
                     NavigationLink(value: document) {
                         DocumentRowView(
@@ -33,6 +41,7 @@ struct DocumentListView: View {
                 }
                 .onDelete(perform: deleteDocuments)
             }
+            .environment(\.editMode, $editMode)
             .overlay {
                 if documents.isEmpty {
                     ContentUnavailableView(
@@ -43,14 +52,34 @@ struct DocumentListView: View {
                 }
             }
             .navigationTitle("ScanDocs")
-            .searchable(text: $searchText, prompt: "Search documents")
+            .searchable(text: $searchText, prompt: "Search title or text")
             .navigationDestination(for: ScannedDocument.self) { document in
                 DocumentDetailView(document: document)
             }
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    EditButton()
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: startScan) {
                         Image(systemName: "plus")
+                    }
+                }
+                ToolbarItemGroup(placement: .bottomBar) {
+                    if editMode == .active {
+                        Button(role: .destructive, action: deleteSelected) {
+                            Label("Delete", systemImage: "trash")
+                        }
+                        .disabled(selectedDocumentIDs.isEmpty)
+
+                        Spacer()
+
+                        Button {
+                            Task { await shareSelected() }
+                        } label: {
+                            Label("Share", systemImage: "square.and.arrow.up")
+                        }
+                        .disabled(selectedDocumentIDs.isEmpty)
                     }
                 }
             }
@@ -80,6 +109,9 @@ struct DocumentListView: View {
                     isShowingEditor = false
                 }
             )
+        }
+        .sheet(isPresented: $isShowingShareSheet) {
+            ActivityView(activityItems: shareItems)
         }
         .alert("Scanning Not Supported", isPresented: $isShowingUnsupportedAlert) {
             Button("OK", role: .cancel) {}
@@ -126,6 +158,31 @@ struct DocumentListView: View {
         for index in offsets {
             modelContext.delete(filteredDocuments[index])
         }
+    }
+
+    private func deleteSelected() {
+        for document in documents where selectedDocumentIDs.contains(document.id) {
+            modelContext.delete(document)
+        }
+        selectedDocumentIDs.removeAll()
+        editMode = .inactive
+    }
+
+    private func shareSelected() async {
+        let selectedDocuments = documents.filter { selectedDocumentIDs.contains($0.id) }
+        var urls: [URL] = []
+        for document in selectedDocuments {
+            let data = await PDFExporter.makePDF(from: document)
+            let safeName = document.title.replacingOccurrences(of: "/", with: "-")
+            let url = FileManager.default.temporaryDirectory
+                .appendingPathComponent("\(safeName)-\(document.id.uuidString.prefix(6)).pdf")
+            if (try? data.write(to: url)) != nil {
+                urls.append(url)
+            }
+        }
+        guard !urls.isEmpty else { return }
+        shareItems = urls
+        isShowingShareSheet = true
     }
 }
 

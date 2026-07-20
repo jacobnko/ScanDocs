@@ -45,7 +45,7 @@ struct DocumentDetailView: View {
                     }
                     Divider()
                     Button("Share PDF", systemImage: "doc.richtext") {
-                        presentShareSheet(with: makePDFShareURL())
+                        Task { presentShareSheet(with: await makePDFShareURL()) }
                     }
                     Button("Share Current Page", systemImage: "photo") {
                         presentShareSheet(with: currentPageImage())
@@ -100,8 +100,8 @@ struct DocumentDetailView: View {
         return ImageFilterEngine.apply(filter, to: image)
     }
 
-    private func makePDFShareURL() -> URL? {
-        let data = PDFExporter.makePDF(from: document)
+    private func makePDFShareURL() async -> URL? {
+        let data = await PDFExporter.makePDF(from: document)
         let safeName = document.title.replacingOccurrences(of: "/", with: "-")
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(safeName).pdf")
         do {

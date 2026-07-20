@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		02FD703DF6595D966E2F3C97 /* CropRotateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B51E1F024C03743EE9143595 /* CropRotateView.swift */; };
 		0DA7EF862BC27A277E9E6BB0 /* PhotoLibraryExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24C76A5992F02E7E84ED0C23 /* PhotoLibraryExporter.swift */; };
 		2386F9D2A832F0C721C0F758 /* DocumentListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42D03CABF056435364A80BF8 /* DocumentListView.swift */; };
 		257C9B06AEEEE5F9A3869E02 /* DocumentPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34FC0605F3ED3AD42901901 /* DocumentPage.swift */; };
@@ -16,6 +17,7 @@
 		5CAEB1FCE0ABD1D6ACBE1B7A /* FilterPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5B747CCF9C44601FB381D94 /* FilterPickerView.swift */; };
 		78461D3EA60ABE8595BBC69A /* ScanDocsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F648E5863BD1A8605A11C0A3 /* ScanDocsApp.swift */; };
 		814EED0CB88E06248A9E6495 /* ImageFilterEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37509F4536A05AC3815F54AD /* ImageFilterEngine.swift */; };
+		90CD2EC6AD9C1A326E4C33E4 /* ImageTransformEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB12008DC209C56BD8356C53 /* ImageTransformEngine.swift */; };
 		B270EE6E2820C6C1240713D7 /* DocumentEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BB07221CFB5EDB6D09FD6C3 /* DocumentEditorView.swift */; };
 		CA09102CE2B802C4A7CABC34 /* PDFExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C4F8760DB85FE85A74ACE4 /* PDFExporter.swift */; };
 		CE286EFB5118879EB9FE50D0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 79A3F59FD936D918AD645010 /* Assets.xcassets */; };
@@ -41,6 +43,8 @@
 		91292F02E8BF559319B90668 /* PageThumbnailStrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageThumbnailStrip.swift; sourceTree = "<group>"; };
 		984C835C7A2FFF2D38C29EFF /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
 		A5B747CCF9C44601FB381D94 /* FilterPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterPickerView.swift; sourceTree = "<group>"; };
+		B51E1F024C03743EE9143595 /* CropRotateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CropRotateView.swift; sourceTree = "<group>"; };
+		BB12008DC209C56BD8356C53 /* ImageTransformEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageTransformEngine.swift; sourceTree = "<group>"; };
 		D34FC0605F3ED3AD42901901 /* DocumentPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentPage.swift; sourceTree = "<group>"; };
 		EEC42FCFCACC2ED54B3D5B56 /* DocumentScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentScannerView.swift; sourceTree = "<group>"; };
 		F648E5863BD1A8605A11C0A3 /* ScanDocsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanDocsApp.swift; sourceTree = "<group>"; };
@@ -133,6 +137,7 @@
 		C383C79B94C595DE194210C8 /* Editor */ = {
 			isa = PBXGroup;
 			children = (
+				B51E1F024C03743EE9143595 /* CropRotateView.swift */,
 				6BB07221CFB5EDB6D09FD6C3 /* DocumentEditorView.swift */,
 				A5B747CCF9C44601FB381D94 /* FilterPickerView.swift */,
 				91292F02E8BF559319B90668 /* PageThumbnailStrip.swift */,
@@ -144,6 +149,7 @@
 			isa = PBXGroup;
 			children = (
 				37509F4536A05AC3815F54AD /* ImageFilterEngine.swift */,
+				BB12008DC209C56BD8356C53 /* ImageTransformEngine.swift */,
 				8C4BFABA14EB354E92F6D209 /* OCRService.swift */,
 				70C4F8760DB85FE85A74ACE4 /* PDFExporter.swift */,
 				24C76A5992F02E7E84ED0C23 /* PhotoLibraryExporter.swift */,
@@ -223,6 +229,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				53D74E3AA1B4F933D7DD4AA9 /* ActivityView.swift in Sources */,
+				02FD703DF6595D966E2F3C97 /* CropRotateView.swift in Sources */,
 				5B6E6CE8F601A708BD31832D /* DocumentDetailView.swift in Sources */,
 				B270EE6E2820C6C1240713D7 /* DocumentEditorView.swift in Sources */,
 				2386F9D2A832F0C721C0F758 /* DocumentListView.swift in Sources */,
@@ -231,6 +238,7 @@
 				DE42350DAAA549110E031B4E /* DocumentScannerView.swift in Sources */,
 				5CAEB1FCE0ABD1D6ACBE1B7A /* FilterPickerView.swift in Sources */,
 				814EED0CB88E06248A9E6495 /* ImageFilterEngine.swift in Sources */,
+				90CD2EC6AD9C1A326E4C33E4 /* ImageTransformEngine.swift in Sources */,
 				FC2E415CEF3DDA678322BAE1 /* OCRService.swift in Sources */,
 				CA09102CE2B802C4A7CABC34 /* PDFExporter.swift in Sources */,
 				32EE849924F8A59C701A99FC /* PageThumbnailStrip.swift in Sources */,

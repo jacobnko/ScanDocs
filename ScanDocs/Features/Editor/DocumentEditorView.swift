@@ -15,6 +15,7 @@ struct DocumentEditorView: View {
     @State private var pages: [EditablePage]
     @State private var selectedPageID: EditablePage.ID?
     @State private var isShowingScanner = false
+    @State private var isShowingCropRotate = false
     @State private var isSaving = false
 
     init(
@@ -49,10 +50,21 @@ struct DocumentEditorView: View {
 
                 PageThumbnailStrip(pages: $pages, selectedPageID: $selectedPageID)
 
-                Button {
-                    isShowingScanner = true
-                } label: {
-                    Label("Add Pages", systemImage: "camera")
+                HStack {
+                    Button {
+                        isShowingCropRotate = true
+                    } label: {
+                        Label("Crop & Rotate", systemImage: "crop.rotate")
+                    }
+                    .disabled(selectedPage == nil)
+
+                    Spacer()
+
+                    Button {
+                        isShowingScanner = true
+                    } label: {
+                        Label("Add Pages", systemImage: "camera")
+                    }
                 }
             }
             .padding()
@@ -95,6 +107,22 @@ struct DocumentEditorView: View {
                 }
             )
             .ignoresSafeArea()
+        }
+        .sheet(isPresented: $isShowingCropRotate) {
+            if let selectedPage {
+                CropRotateView(
+                    originalImage: selectedPage.image,
+                    onApply: { newImage in
+                        if let index = pages.firstIndex(where: { $0.id == selectedPage.id }) {
+                            pages[index].image = newImage
+                        }
+                        isShowingCropRotate = false
+                    },
+                    onCancel: {
+                        isShowingCropRotate = false
+                    }
+                )
+            }
         }
     }
 
