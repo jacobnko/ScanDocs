@@ -2,19 +2,30 @@
 import SwiftUI
 
 struct DocumentRowView: View {
+    let thumbnail: UIImage?
     let title: String
     let pageCount: Int
     let createdAt: Date
 
     var body: some View {
         HStack(spacing: 12) {
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color.secondary.opacity(0.15))
-                .frame(width: 44, height: 56)
-                .overlay {
-                    Image(systemName: "doc.text")
-                        .foregroundStyle(.secondary)
+            Group {
+                if let thumbnail {
+                    Image(uiImage: thumbnail)
+                        .resizable()
+                        .scaledToFill()
+                } else {
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color.secondary.opacity(0.15))
+                        .overlay {
+                            Image(systemName: "doc.text")
+                                .foregroundStyle(.secondary)
+                        }
                 }
+            }
+            .frame(width: 44, height: 56)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
                     .font(.body)
@@ -28,7 +39,7 @@ struct DocumentRowView: View {
 }
 
 #Preview {
-    DocumentRowView(title: "Sample Document", pageCount: 3, createdAt: .now)
+    DocumentRowView(thumbnail: nil, title: "Sample Document", pageCount: 3, createdAt: .now)
         .frame(width: 400, height: 600)
         .preferredColorScheme(.light)
 }

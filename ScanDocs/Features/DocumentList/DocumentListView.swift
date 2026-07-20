@@ -11,16 +11,25 @@ struct DocumentListView: View {
     @State private var isShowingUnsupportedAlert = false
     @State private var isShowingEditor = false
     @State private var pagesPendingEdit: [UIImage] = []
+    @State private var searchText = ""
+
+    private var filteredDocuments: [ScannedDocument] {
+        guard !searchText.isEmpty else { return documents }
+        return documents.filter { $0.title.localizedCaseInsensitiveContains(searchText) }
+    }
 
     var body: some View {
         NavigationStack {
             List {
-                ForEach(documents) { document in
-                    DocumentRowView(
-                        title: document.title,
-                        pageCount: document.pages.count,
-                        createdAt: document.createdAt
-                    )
+                ForEach(filteredDocuments) { document in
+                    NavigationLink(value: document) {
+                        DocumentRowView(
+                            thumbnail: thumbnail(for: document),
+                            title: document.title,
+                            pageCount: document.pages.count,
+                            createdAt: document.createdAt
+                        )
+                    }
                 }
                 .onDelete(perform: deleteDocuments)
             }
@@ -34,6 +43,10 @@ struct DocumentListView: View {
                 }
             }
             .navigationTitle("ScanDocs")
+            .searchable(text: $searchText, prompt: "Search documents")
+            .navigationDestination(for: ScannedDocument.self) { document in
+                DocumentDetailView(document: document)
+            }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: startScan) {
@@ -83,6 +96,13 @@ struct DocumentListView: View {
         isShowingScanner = true
     }
 
+    private func thumbnail(for document: ScannedDocument) -> UIImage? {
+        guard let firstPage = document.pages.min(by: { $0.order < $1.order }),
+              let image = UIImage(data: firstPage.imageData) else { return nil }
+        let filter = ImageFilterType(rawValue: firstPage.filterType) ?? .original
+        return ImageFilterEngine.apply(filter, to: image)
+    }
+
     // 편집 화면에서 확정된 페이지들(필터 종류 포함)을 OCR 처리 후 SwiftData에 저장
     private func saveDocument(pages: [EditablePage]) async {
         guard !pages.isEmpty else { return }
@@ -104,7 +124,7 @@ struct DocumentListView: View {
 
     private func deleteDocuments(at offsets: IndexSet) {
         for index in offsets {
-            modelContext.delete(documents[index])
+            modelContext.delete(filteredDocuments[index])
         }
     }
 }
