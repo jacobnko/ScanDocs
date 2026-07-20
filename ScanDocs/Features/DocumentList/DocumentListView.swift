@@ -9,7 +9,8 @@ struct DocumentListView: View {
 
     @State private var isShowingScanner = false
     @State private var isShowingUnsupportedAlert = false
-    @State private var isProcessing = false
+    @State private var isShowingEditor = false
+    @State private var pagesPendingEdit: [UIImage] = []
 
     var body: some View {
         NavigationStack {
@@ -24,9 +25,7 @@ struct DocumentListView: View {
                 .onDelete(perform: deleteDocuments)
             }
             .overlay {
-                if isProcessing {
-                    ProgressView("Recognizing text…")
-                } else if documents.isEmpty {
+                if documents.isEmpty {
                     ContentUnavailableView(
                         "No Documents",
                         systemImage: "doc.viewfinder",
@@ -48,17 +47,26 @@ struct DocumentListView: View {
             DocumentScannerView(
                 onFinish: { pages in
                     isShowingScanner = false
-                    isProcessing = true
-                    Task {
-                        await saveScannedDocument(pages: pages)
-                        isProcessing = false
-                    }
+                    pagesPendingEdit = pages
+                    isShowingEditor = true
                 },
                 onCancel: {
                     isShowingScanner = false
                 }
             )
             .ignoresSafeArea()
+        }
+        .fullScreenCover(isPresented: $isShowingEditor) {
+            DocumentEditorView(
+                initialPages: pagesPendingEdit,
+                onSave: { editedPages in
+                    await saveDocument(pages: editedPages)
+                    isShowingEditor = false
+                },
+                onCancel: {
+                    isShowingEditor = false
+                }
+            )
         }
         .alert("Scanning Not Supported", isPresented: $isShowingUnsupportedAlert) {
             Button("OK", role: .cancel) {}
@@ -75,15 +83,21 @@ struct DocumentListView: View {
         isShowingScanner = true
     }
 
-    private func saveScannedDocument(pages: [UIImage]) async {
+    // 편집 화면에서 확정된 페이지들(필터 종류 포함)을 OCR 처리 후 SwiftData에 저장
+    private func saveDocument(pages: [EditablePage]) async {
         guard !pages.isEmpty else { return }
         let document = ScannedDocument(title: "Untitled \(documents.count + 1)")
-        for (index, image) in pages.enumerated() {
-            let imageData = image.jpegData(compressionQuality: 0.8) ?? Data()
-            let recognizedText = await OCRService.recognizeText(in: image)
-            let page = DocumentPage(order: index, imageData: imageData, recognizedText: recognizedText)
-            page.document = document
-            document.pages.append(page)
+        for (index, page) in pages.enumerated() {
+            let imageData = page.image.jpegData(compressionQuality: 0.8) ?? Data()
+            let recognizedText = await OCRService.recognizeText(in: page.image)
+            let documentPage = DocumentPage(
+                order: index,
+                imageData: imageData,
+                filterType: page.filter.rawValue,
+                recognizedText: recognizedText
+            )
+            documentPage.document = document
+            document.pages.append(documentPage)
         }
         modelContext.insert(document)
     }
