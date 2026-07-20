@@ -1,4 +1,4 @@
-// 저장된 스캔 문서 목록을 보여주는 홈 화면
+// 저장된 스캔 문서를 카드 그리드로 보여주는 홈 화면
 import SwiftUI
 import SwiftData
 import VisionKit
@@ -7,15 +7,18 @@ struct DocumentListView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \ScannedDocument.createdAt, order: .reverse) private var documents: [ScannedDocument]
 
+    @State private var navigationPath = NavigationPath()
     @State private var isShowingScanner = false
     @State private var isShowingUnsupportedAlert = false
     @State private var isShowingEditor = false
     @State private var pagesPendingEdit: [UIImage] = []
     @State private var searchText = ""
-    @State private var editMode: EditMode = .inactive
+    @State private var isSelecting = false
     @State private var selectedDocumentIDs = Set<UUID>()
     @State private var isShowingShareSheet = false
     @State private var shareItems: [Any] = []
+
+    private let columns = [GridItem(.flexible(), spacing: 16), GridItem(.flexible(), spacing: 16)]
 
     // 제목뿐 아니라 OCR로 추출해둔 페이지 본문 텍스트까지 검색 대상에 포함
     private var filteredDocuments: [ScannedDocument] {
@@ -27,28 +30,19 @@ struct DocumentListView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            List(selection: $selectedDocumentIDs) {
-                ForEach(filteredDocuments) { document in
-                    NavigationLink(value: document) {
-                        DocumentRowView(
-                            thumbnail: thumbnail(for: document),
-                            title: document.title,
-                            pageCount: document.pages.count,
-                            createdAt: document.createdAt
-                        )
+        NavigationStack(path: $navigationPath) {
+            ScrollView {
+                LazyVGrid(columns: columns, spacing: 20) {
+                    ForEach(filteredDocuments) { document in
+                        cardButton(for: document)
                     }
                 }
-                .onDelete(perform: deleteDocuments)
+                .padding(16)
             }
-            .environment(\.editMode, $editMode)
+            .background(Color(.systemGroupedBackground))
             .overlay {
                 if documents.isEmpty {
-                    ContentUnavailableView(
-                        "No Documents",
-                        systemImage: "doc.viewfinder",
-                        description: Text("Tap + to scan a document.")
-                    )
+                    emptyState
                 }
             }
             .navigationTitle("ScanDocs")
@@ -57,16 +51,15 @@ struct DocumentListView: View {
                 DocumentDetailView(document: document)
             }
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    EditButton()
-                }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: startScan) {
-                        Image(systemName: "plus")
+                    Button(isSelecting ? "Done" : "Select") {
+                        isSelecting.toggle()
+                        if !isSelecting { selectedDocumentIDs.removeAll() }
                     }
+                    .disabled(documents.isEmpty)
                 }
                 ToolbarItemGroup(placement: .bottomBar) {
-                    if editMode == .active {
+                    if isSelecting {
                         Button(role: .destructive, action: deleteSelected) {
                             Label("Delete", systemImage: "trash")
                         }
@@ -75,12 +68,17 @@ struct DocumentListView: View {
                         Spacer()
 
                         Button {
-                            Task { await shareSelected() }
+                            Task { await sharePDFs(for: selectedDocuments) }
                         } label: {
                             Label("Share", systemImage: "square.and.arrow.up")
                         }
                         .disabled(selectedDocumentIDs.isEmpty)
                     }
+                }
+            }
+            .overlay(alignment: .bottomTrailing) {
+                if !isSelecting {
+                    scanButton
                 }
             }
         }
@@ -120,6 +118,95 @@ struct DocumentListView: View {
         }
     }
 
+    private var selectedDocuments: [ScannedDocument] {
+        documents.filter { selectedDocumentIDs.contains($0.id) }
+    }
+
+    private func cardButton(for document: ScannedDocument) -> some View {
+        Button {
+            if isSelecting {
+                toggleSelection(document.id)
+            } else {
+                navigationPath.append(document)
+            }
+        } label: {
+            DocumentCardView(
+                thumbnail: thumbnail(for: document),
+                title: document.title,
+                pageCount: document.pages.count,
+                createdAt: document.createdAt,
+                isSelecting: isSelecting,
+                isSelected: selectedDocumentIDs.contains(document.id)
+            )
+        }
+        .buttonStyle(.plain)
+        .contextMenu {
+            Button {
+                Task { await sharePDFs(for: [document]) }
+            } label: {
+                Label("Share PDF", systemImage: "square.and.arrow.up")
+            }
+            Button(role: .destructive) {
+                modelContext.delete(document)
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
+    }
+
+    private var scanButton: some View {
+        Button(action: startScan) {
+            Image(systemName: "camera.fill")
+                .font(.title2.weight(.semibold))
+                .foregroundStyle(.white)
+                .frame(width: 60, height: 60)
+                .background(
+                    LinearGradient(
+                        colors: [Color.accentColor, Color.accentColor.opacity(0.75)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .clipShape(Circle())
+                .shadow(color: Color.accentColor.opacity(0.45), radius: 12, y: 6)
+        }
+        .padding(24)
+    }
+
+    private var emptyState: some View {
+        VStack(spacing: 16) {
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.accentColor.opacity(0.28), Color.accentColor.opacity(0.08)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .frame(width: 96, height: 96)
+                Image(systemName: "doc.text.viewfinder")
+                    .font(.system(size: 40))
+                    .foregroundStyle(Color.accentColor)
+            }
+            Text("No Documents Yet")
+                .font(.headline)
+            Text("Tap the camera button to scan your first document.")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+        }
+    }
+
+    private func toggleSelection(_ id: UUID) {
+        if selectedDocumentIDs.contains(id) {
+            selectedDocumentIDs.remove(id)
+        } else {
+            selectedDocumentIDs.insert(id)
+        }
+    }
+
     private func startScan() {
         guard VNDocumentCameraViewController.isSupported else {
             isShowingUnsupportedAlert = true
@@ -154,24 +241,17 @@ struct DocumentListView: View {
         modelContext.insert(document)
     }
 
-    private func deleteDocuments(at offsets: IndexSet) {
-        for index in offsets {
-            modelContext.delete(filteredDocuments[index])
-        }
-    }
-
     private func deleteSelected() {
-        for document in documents where selectedDocumentIDs.contains(document.id) {
+        for document in selectedDocuments {
             modelContext.delete(document)
         }
         selectedDocumentIDs.removeAll()
-        editMode = .inactive
+        isSelecting = false
     }
 
-    private func shareSelected() async {
-        let selectedDocuments = documents.filter { selectedDocumentIDs.contains($0.id) }
+    private func sharePDFs(for docs: [ScannedDocument]) async {
         var urls: [URL] = []
-        for document in selectedDocuments {
+        for document in docs {
             let data = await PDFExporter.makePDF(from: document)
             let safeName = document.title.replacingOccurrences(of: "/", with: "-")
             let url = FileManager.default.temporaryDirectory

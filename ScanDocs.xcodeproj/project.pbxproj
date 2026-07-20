@@ -21,15 +21,15 @@
 		B270EE6E2820C6C1240713D7 /* DocumentEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BB07221CFB5EDB6D09FD6C3 /* DocumentEditorView.swift */; };
 		CA09102CE2B802C4A7CABC34 /* PDFExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70C4F8760DB85FE85A74ACE4 /* PDFExporter.swift */; };
 		CE286EFB5118879EB9FE50D0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 79A3F59FD936D918AD645010 /* Assets.xcassets */; };
+		D0F89CBE7D5F1A2CB52355FC /* DocumentCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21643E0A7BEF71E634B49E27 /* DocumentCardView.swift */; };
 		DE42350DAAA549110E031B4E /* DocumentScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEC42FCFCACC2ED54B3D5B56 /* DocumentScannerView.swift */; };
-		DFF12415ED4FEDCBF21CA680 /* DocumentRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27EA07C754A3D78F70AB6C31 /* DocumentRowView.swift */; };
 		E3CA85A4765472C3F0ECBDA8 /* ScannedDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B42065FE363067EEF8DA332 /* ScannedDocument.swift */; };
 		FC2E415CEF3DDA678322BAE1 /* OCRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C4BFABA14EB354E92F6D209 /* OCRService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		21643E0A7BEF71E634B49E27 /* DocumentCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentCardView.swift; sourceTree = "<group>"; };
 		24C76A5992F02E7E84ED0C23 /* PhotoLibraryExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoLibraryExporter.swift; sourceTree = "<group>"; };
-		27EA07C754A3D78F70AB6C31 /* DocumentRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentRowView.swift; sourceTree = "<group>"; };
 		29F42BDEE127EB4062FB8484 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		37509F4536A05AC3815F54AD /* ImageFilterEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageFilterEngine.swift; sourceTree = "<group>"; };
 		3C1A2DAE26BA7D9BDA104DBF /* ScanDocs.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = ScanDocs.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -100,8 +100,8 @@
 		916A0B49AD0A7419722A1EFF /* DocumentList */ = {
 			isa = PBXGroup;
 			children = (
+				21643E0A7BEF71E634B49E27 /* DocumentCardView.swift */,
 				42D03CABF056435364A80BF8 /* DocumentListView.swift */,
-				27EA07C754A3D78F70AB6C31 /* DocumentRowView.swift */,
 			);
 			path = DocumentList;
 			sourceTree = "<group>";
@@ -230,11 +230,11 @@
 			files = (
 				53D74E3AA1B4F933D7DD4AA9 /* ActivityView.swift in Sources */,
 				02FD703DF6595D966E2F3C97 /* CropRotateView.swift in Sources */,
+				D0F89CBE7D5F1A2CB52355FC /* DocumentCardView.swift in Sources */,
 				5B6E6CE8F601A708BD31832D /* DocumentDetailView.swift in Sources */,
 				B270EE6E2820C6C1240713D7 /* DocumentEditorView.swift in Sources */,
 				2386F9D2A832F0C721C0F758 /* DocumentListView.swift in Sources */,
 				257C9B06AEEEE5F9A3869E02 /* DocumentPage.swift in Sources */,
-				DFF12415ED4FEDCBF21CA680 /* DocumentRowView.swift in Sources */,
 				DE42350DAAA549110E031B4E /* DocumentScannerView.swift in Sources */,
 				5CAEB1FCE0ABD1D6ACBE1B7A /* FilterPickerView.swift in Sources */,
 				814EED0CB88E06248A9E6495 /* ImageFilterEngine.swift in Sources */,

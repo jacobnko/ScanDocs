@@ -33,6 +33,17 @@ struct DocumentDetailView: View {
             }
         }
         .tabViewStyle(.page(indexDisplayMode: .automatic))
+        .background(Color(.secondarySystemBackground))
+        .overlay(alignment: .top) {
+            if sortedPages.count > 1 {
+                Text("\(selectedPageIndex + 1) of \(sortedPages.count)")
+                    .font(.caption.weight(.semibold))
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(.thinMaterial, in: Capsule())
+                    .padding(.top, 8)
+            }
+        }
         .frame(width: 380)
         .navigationTitle(document.title)
         .navigationBarTitleDisplayMode(.inline)
@@ -54,7 +65,11 @@ struct DocumentDetailView: View {
                         Task { await saveCurrentPageToPhotos() }
                     }
                 } label: {
-                    Image(systemName: "ellipsis.circle")
+                    Image(systemName: "ellipsis")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
+                        .frame(width: 32, height: 32)
+                        .background(.thinMaterial, in: Circle())
                 }
             }
         }
