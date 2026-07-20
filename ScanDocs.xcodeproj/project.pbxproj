@@ -7,9 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0DA7EF862BC27A277E9E6BB0 /* PhotoLibraryExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24C76A5992F02E7E84ED0C23 /* PhotoLibraryExporter.swift */; };
 		2386F9D2A832F0C721C0F758 /* DocumentListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42D03CABF056435364A80BF8 /* DocumentListView.swift */; };
 		257C9B06AEEEE5F9A3869E02 /* DocumentPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34FC0605F3ED3AD42901901 /* DocumentPage.swift */; };
 		32EE849924F8A59C701A99FC /* PageThumbnailStrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = 91292F02E8BF559319B90668 /* PageThumbnailStrip.swift */; };
+		53D74E3AA1B4F933D7DD4AA9 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 984C835C7A2FFF2D38C29EFF /* ActivityView.swift */; };
 		5B6E6CE8F601A708BD31832D /* DocumentDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 40507D32378459050A1C5EB0 /* DocumentDetailView.swift */; };
 		5CAEB1FCE0ABD1D6ACBE1B7A /* FilterPickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5B747CCF9C44601FB381D94 /* FilterPickerView.swift */; };
 		78461D3EA60ABE8595BBC69A /* ScanDocsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F648E5863BD1A8605A11C0A3 /* ScanDocsApp.swift */; };
@@ -24,6 +26,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		24C76A5992F02E7E84ED0C23 /* PhotoLibraryExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotoLibraryExporter.swift; sourceTree = "<group>"; };
 		27EA07C754A3D78F70AB6C31 /* DocumentRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentRowView.swift; sourceTree = "<group>"; };
 		29F42BDEE127EB4062FB8484 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		37509F4536A05AC3815F54AD /* ImageFilterEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageFilterEngine.swift; sourceTree = "<group>"; };
@@ -36,6 +39,7 @@
 		7B42065FE363067EEF8DA332 /* ScannedDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannedDocument.swift; sourceTree = "<group>"; };
 		8C4BFABA14EB354E92F6D209 /* OCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRService.swift; sourceTree = "<group>"; };
 		91292F02E8BF559319B90668 /* PageThumbnailStrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PageThumbnailStrip.swift; sourceTree = "<group>"; };
+		984C835C7A2FFF2D38C29EFF /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
 		A5B747CCF9C44601FB381D94 /* FilterPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterPickerView.swift; sourceTree = "<group>"; };
 		D34FC0605F3ED3AD42901901 /* DocumentPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentPage.swift; sourceTree = "<group>"; };
 		EEC42FCFCACC2ED54B3D5B56 /* DocumentScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentScannerView.swift; sourceTree = "<group>"; };
@@ -43,6 +47,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		01D7A235CDF7056211648275 /* Components */ = {
+			isa = PBXGroup;
+			children = (
+				984C835C7A2FFF2D38C29EFF /* ActivityView.swift */,
+			);
+			path = Components;
+			sourceTree = "<group>";
+		};
 		139731308C1D5B72625075EB = {
 			isa = PBXGroup;
 			children = (
@@ -65,6 +77,7 @@
 				79A3F59FD936D918AD645010 /* Assets.xcassets */,
 				29F42BDEE127EB4062FB8484 /* Info.plist */,
 				F648E5863BD1A8605A11C0A3 /* ScanDocsApp.swift */,
+				01D7A235CDF7056211648275 /* Components */,
 				AA684A42F9A14126A3CC019C /* Features */,
 				9691088886D2D530937C861D /* Models */,
 				CC59473581AC3631D667EAD5 /* Services */,
@@ -133,6 +146,7 @@
 				37509F4536A05AC3815F54AD /* ImageFilterEngine.swift */,
 				8C4BFABA14EB354E92F6D209 /* OCRService.swift */,
 				70C4F8760DB85FE85A74ACE4 /* PDFExporter.swift */,
+				24C76A5992F02E7E84ED0C23 /* PhotoLibraryExporter.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -208,6 +222,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				53D74E3AA1B4F933D7DD4AA9 /* ActivityView.swift in Sources */,
 				5B6E6CE8F601A708BD31832D /* DocumentDetailView.swift in Sources */,
 				B270EE6E2820C6C1240713D7 /* DocumentEditorView.swift in Sources */,
 				2386F9D2A832F0C721C0F758 /* DocumentListView.swift in Sources */,
@@ -219,6 +234,7 @@
 				FC2E415CEF3DDA678322BAE1 /* OCRService.swift in Sources */,
 				CA09102CE2B802C4A7CABC34 /* PDFExporter.swift in Sources */,
 				32EE849924F8A59C701A99FC /* PageThumbnailStrip.swift in Sources */,
+				0DA7EF862BC27A277E9E6BB0 /* PhotoLibraryExporter.swift in Sources */,
 				78461D3EA60ABE8595BBC69A /* ScanDocsApp.swift in Sources */,
 				E3CA85A4765472C3F0ECBDA8 /* ScannedDocument.swift in Sources */,
 			);

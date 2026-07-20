@@ -1,4 +1,4 @@
-// 문서 상세 화면: 페이지 스와이프 뷰어, 파일명 변경, 재편집 진입
+// 문서 상세 화면: 페이지 스와이프 뷰어, 파일명 변경, 재편집, PDF/이미지 공유, 사진 앱 저장
 import SwiftUI
 import SwiftData
 
@@ -9,20 +9,26 @@ struct DocumentDetailView: View {
     @State private var isEditingTitle = false
     @State private var editedTitle = ""
     @State private var isShowingEditor = false
+    @State private var selectedPageIndex = 0
+    @State private var isShowingShareSheet = false
+    @State private var shareItems: [Any] = []
+    @State private var isShowingSaveResultAlert = false
+    @State private var saveResultMessage = ""
 
     private var sortedPages: [DocumentPage] {
         document.pages.sorted { $0.order < $1.order }
     }
 
     var body: some View {
-        TabView {
-            ForEach(sortedPages) { page in
+        TabView(selection: $selectedPageIndex) {
+            ForEach(Array(sortedPages.enumerated()), id: \.offset) { index, page in
                 if let uiImage = UIImage(data: page.imageData) {
                     let filter = ImageFilterType(rawValue: page.filterType) ?? .original
                     Image(uiImage: ImageFilterEngine.apply(filter, to: uiImage))
                         .resizable()
                         .scaledToFit()
                         .padding()
+                        .tag(index)
                 }
             }
         }
@@ -37,6 +43,16 @@ struct DocumentDetailView: View {
                     Button("Edit Pages", systemImage: "slider.horizontal.3") {
                         isShowingEditor = true
                     }
+                    Divider()
+                    Button("Share PDF", systemImage: "doc.richtext") {
+                        presentShareSheet(with: makePDFShareURL())
+                    }
+                    Button("Share Current Page", systemImage: "photo") {
+                        presentShareSheet(with: currentPageImage())
+                    }
+                    Button("Save Current Page to Photos", systemImage: "square.and.arrow.down") {
+                        Task { await saveCurrentPageToPhotos() }
+                    }
                 } label: {
                     Image(systemName: "ellipsis.circle")
                 }
@@ -48,6 +64,14 @@ struct DocumentDetailView: View {
             Button("Save") {
                 document.title = editedTitle
             }
+        }
+        .alert("Save to Photos", isPresented: $isShowingSaveResultAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(saveResultMessage)
+        }
+        .sheet(isPresented: $isShowingShareSheet) {
+            ActivityView(activityItems: shareItems)
         }
         .fullScreenCover(isPresented: $isShowingEditor) {
             DocumentEditorView(
@@ -66,6 +90,43 @@ struct DocumentDetailView: View {
     private func startRename() {
         editedTitle = document.title
         isEditingTitle = true
+    }
+
+    private func currentPageImage() -> UIImage? {
+        guard sortedPages.indices.contains(selectedPageIndex) else { return nil }
+        let page = sortedPages[selectedPageIndex]
+        guard let image = UIImage(data: page.imageData) else { return nil }
+        let filter = ImageFilterType(rawValue: page.filterType) ?? .original
+        return ImageFilterEngine.apply(filter, to: image)
+    }
+
+    private func makePDFShareURL() -> URL? {
+        let data = PDFExporter.makePDF(from: document)
+        let safeName = document.title.replacingOccurrences(of: "/", with: "-")
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("\(safeName).pdf")
+        do {
+            try data.write(to: url)
+            return url
+        } catch {
+            return nil
+        }
+    }
+
+    private func presentShareSheet(with item: Any?) {
+        guard let item else { return }
+        shareItems = [item]
+        isShowingShareSheet = true
+    }
+
+    private func saveCurrentPageToPhotos() async {
+        guard let image = currentPageImage() else { return }
+        do {
+            try await PhotoLibraryExporter.save(image)
+            saveResultMessage = "Saved to Photos."
+        } catch {
+            saveResultMessage = "Couldn't save to Photos. Check permission in Settings."
+        }
+        isShowingSaveResultAlert = true
     }
 
     // 재편집 저장 시 기존 페이지를 전부 지우고 편집된 페이지로 교체
