@@ -1,10 +1,14 @@
 // 저장된 스캔 문서 목록을 보여주는 홈 화면
 import SwiftUI
 import SwiftData
+import VisionKit
 
 struct DocumentListView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \ScannedDocument.createdAt, order: .reverse) private var documents: [ScannedDocument]
+
+    @State private var isShowingScanner = false
+    @State private var isShowingUnsupportedAlert = false
 
     var body: some View {
         NavigationStack {
@@ -23,28 +27,56 @@ struct DocumentListView: View {
                     ContentUnavailableView(
                         "No Documents",
                         systemImage: "doc.viewfinder",
-                        description: Text("Tap + to add a test document.")
+                        description: Text("Tap + to scan a document.")
                     )
                 }
             }
             .navigationTitle("ScanDocs")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(action: addDummyDocument) {
+                    Button(action: startScan) {
                         Image(systemName: "plus")
                     }
                 }
             }
         }
         .frame(width: 380)
+        .fullScreenCover(isPresented: $isShowingScanner) {
+            DocumentScannerView(
+                onFinish: { pages in
+                    saveScannedDocument(pages: pages)
+                    isShowingScanner = false
+                },
+                onCancel: {
+                    isShowingScanner = false
+                }
+            )
+            .ignoresSafeArea()
+        }
+        .alert("Scanning Not Supported", isPresented: $isShowingUnsupportedAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("This device or simulator does not support document scanning.")
+        }
     }
 
-    // Step 2에서 실제 VisionKit 스캔 플로우로 교체될 임시 더미 데이터 생성 함수
-    private func addDummyDocument() {
+    private func startScan() {
+        guard VNDocumentCameraViewController.isSupported else {
+            isShowingUnsupportedAlert = true
+            return
+        }
+        isShowingScanner = true
+    }
+
+    private func saveScannedDocument(pages: [UIImage]) {
+        guard !pages.isEmpty else { return }
         let document = ScannedDocument(title: "Untitled \(documents.count + 1)")
-        let page = DocumentPage(order: 0, imageData: Data())
-        page.document = document
-        document.pages.append(page)
+        for (index, image) in pages.enumerated() {
+            let imageData = image.jpegData(compressionQuality: 0.8) ?? Data()
+            let page = DocumentPage(order: index, imageData: imageData)
+            page.document = document
+            document.pages.append(page)
+        }
         modelContext.insert(document)
     }
 

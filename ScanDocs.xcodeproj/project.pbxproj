@@ -11,6 +11,7 @@
 		257C9B06AEEEE5F9A3869E02 /* DocumentPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = D34FC0605F3ED3AD42901901 /* DocumentPage.swift */; };
 		78461D3EA60ABE8595BBC69A /* ScanDocsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F648E5863BD1A8605A11C0A3 /* ScanDocsApp.swift */; };
 		CE286EFB5118879EB9FE50D0 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 79A3F59FD936D918AD645010 /* Assets.xcassets */; };
+		DE42350DAAA549110E031B4E /* DocumentScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEC42FCFCACC2ED54B3D5B56 /* DocumentScannerView.swift */; };
 		DFF12415ED4FEDCBF21CA680 /* DocumentRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27EA07C754A3D78F70AB6C31 /* DocumentRowView.swift */; };
 		E3CA85A4765472C3F0ECBDA8 /* ScannedDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B42065FE363067EEF8DA332 /* ScannedDocument.swift */; };
 /* End PBXBuildFile section */
@@ -23,6 +24,7 @@
 		79A3F59FD936D918AD645010 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7B42065FE363067EEF8DA332 /* ScannedDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannedDocument.swift; sourceTree = "<group>"; };
 		D34FC0605F3ED3AD42901901 /* DocumentPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentPage.swift; sourceTree = "<group>"; };
+		EEC42FCFCACC2ED54B3D5B56 /* DocumentScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentScannerView.swift; sourceTree = "<group>"; };
 		F648E5863BD1A8605A11C0A3 /* ScanDocsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanDocsApp.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -47,6 +49,14 @@
 			path = ScanDocs;
 			sourceTree = "<group>";
 		};
+		33AF004573E871EA414EBED4 /* Scan */ = {
+			isa = PBXGroup;
+			children = (
+				EEC42FCFCACC2ED54B3D5B56 /* DocumentScannerView.swift */,
+			);
+			path = Scan;
+			sourceTree = "<group>";
+		};
 		916A0B49AD0A7419722A1EFF /* DocumentList */ = {
 			isa = PBXGroup;
 			children = (
@@ -69,6 +79,7 @@
 			isa = PBXGroup;
 			children = (
 				916A0B49AD0A7419722A1EFF /* DocumentList */,
+				33AF004573E871EA414EBED4 /* Scan */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -155,6 +166,7 @@
 				2386F9D2A832F0C721C0F758 /* DocumentListView.swift in Sources */,
 				257C9B06AEEEE5F9A3869E02 /* DocumentPage.swift in Sources */,
 				DFF12415ED4FEDCBF21CA680 /* DocumentRowView.swift in Sources */,
+				DE42350DAAA549110E031B4E /* DocumentScannerView.swift in Sources */,
 				78461D3EA60ABE8595BBC69A /* ScanDocsApp.swift in Sources */,
 				E3CA85A4765472C3F0ECBDA8 /* ScannedDocument.swift in Sources */,
 			);
