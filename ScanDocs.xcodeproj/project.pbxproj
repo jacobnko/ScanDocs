@@ -16,6 +16,7 @@
 		DE42350DAAA549110E031B4E /* DocumentScannerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EEC42FCFCACC2ED54B3D5B56 /* DocumentScannerView.swift */; };
 		DFF12415ED4FEDCBF21CA680 /* DocumentRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27EA07C754A3D78F70AB6C31 /* DocumentRowView.swift */; };
 		E3CA85A4765472C3F0ECBDA8 /* ScannedDocument.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7B42065FE363067EEF8DA332 /* ScannedDocument.swift */; };
+		FC2E415CEF3DDA678322BAE1 /* OCRService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C4BFABA14EB354E92F6D209 /* OCRService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +27,7 @@
 		42D03CABF056435364A80BF8 /* DocumentListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentListView.swift; sourceTree = "<group>"; };
 		79A3F59FD936D918AD645010 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7B42065FE363067EEF8DA332 /* ScannedDocument.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannedDocument.swift; sourceTree = "<group>"; };
+		8C4BFABA14EB354E92F6D209 /* OCRService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OCRService.swift; sourceTree = "<group>"; };
 		A5B747CCF9C44601FB381D94 /* FilterPickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilterPickerView.swift; sourceTree = "<group>"; };
 		D34FC0605F3ED3AD42901901 /* DocumentPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentPage.swift; sourceTree = "<group>"; };
 		EEC42FCFCACC2ED54B3D5B56 /* DocumentScannerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DocumentScannerView.swift; sourceTree = "<group>"; };
@@ -110,6 +112,7 @@
 			isa = PBXGroup;
 			children = (
 				37509F4536A05AC3815F54AD /* ImageFilterEngine.swift */,
+				8C4BFABA14EB354E92F6D209 /* OCRService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -191,6 +194,7 @@
 				DE42350DAAA549110E031B4E /* DocumentScannerView.swift in Sources */,
 				5CAEB1FCE0ABD1D6ACBE1B7A /* FilterPickerView.swift in Sources */,
 				814EED0CB88E06248A9E6495 /* ImageFilterEngine.swift in Sources */,
+				FC2E415CEF3DDA678322BAE1 /* OCRService.swift in Sources */,
 				78461D3EA60ABE8595BBC69A /* ScanDocsApp.swift in Sources */,
 				E3CA85A4765472C3F0ECBDA8 /* ScannedDocument.swift in Sources */,
 			);

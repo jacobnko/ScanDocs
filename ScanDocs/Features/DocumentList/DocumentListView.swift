@@ -9,6 +9,7 @@ struct DocumentListView: View {
 
     @State private var isShowingScanner = false
     @State private var isShowingUnsupportedAlert = false
+    @State private var isProcessing = false
 
     var body: some View {
         NavigationStack {
@@ -23,7 +24,9 @@ struct DocumentListView: View {
                 .onDelete(perform: deleteDocuments)
             }
             .overlay {
-                if documents.isEmpty {
+                if isProcessing {
+                    ProgressView("Recognizing text…")
+                } else if documents.isEmpty {
                     ContentUnavailableView(
                         "No Documents",
                         systemImage: "doc.viewfinder",
@@ -44,8 +47,12 @@ struct DocumentListView: View {
         .fullScreenCover(isPresented: $isShowingScanner) {
             DocumentScannerView(
                 onFinish: { pages in
-                    saveScannedDocument(pages: pages)
                     isShowingScanner = false
+                    isProcessing = true
+                    Task {
+                        await saveScannedDocument(pages: pages)
+                        isProcessing = false
+                    }
                 },
                 onCancel: {
                     isShowingScanner = false
@@ -68,12 +75,13 @@ struct DocumentListView: View {
         isShowingScanner = true
     }
 
-    private func saveScannedDocument(pages: [UIImage]) {
+    private func saveScannedDocument(pages: [UIImage]) async {
         guard !pages.isEmpty else { return }
         let document = ScannedDocument(title: "Untitled \(documents.count + 1)")
         for (index, image) in pages.enumerated() {
             let imageData = image.jpegData(compressionQuality: 0.8) ?? Data()
-            let page = DocumentPage(order: index, imageData: imageData)
+            let recognizedText = await OCRService.recognizeText(in: image)
+            let page = DocumentPage(order: index, imageData: imageData, recognizedText: recognizedText)
             page.document = document
             document.pages.append(page)
         }
