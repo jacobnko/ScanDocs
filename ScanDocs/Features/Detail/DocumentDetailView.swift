@@ -22,14 +22,8 @@ struct DocumentDetailView: View {
     var body: some View {
         TabView(selection: $selectedPageIndex) {
             ForEach(Array(sortedPages.enumerated()), id: \.offset) { index, page in
-                if let uiImage = UIImage(data: page.imageData) {
-                    let filter = ImageFilterType(rawValue: page.filterType) ?? .original
-                    Image(uiImage: ImageFilterEngine.apply(filter, to: uiImage))
-                        .resizable()
-                        .scaledToFit()
-                        .padding()
-                        .tag(index)
-                }
+                ZoomablePageView(page: page)
+                    .tag(index)
             }
         }
         .tabViewStyle(.page(indexDisplayMode: .automatic))
@@ -59,7 +53,7 @@ struct DocumentDetailView: View {
                         Task { presentShareSheet(with: await makePDFShareURL()) }
                     }
                     Button("Share Current Page", systemImage: "photo") {
-                        presentShareSheet(with: currentPageImage())
+                        Task { presentShareSheet(with: await currentPageImage()) }
                     }
                     Button("Save Current Page to Photos", systemImage: "square.and.arrow.down") {
                         Task { await saveCurrentPageToPhotos() }
@@ -107,12 +101,16 @@ struct DocumentDetailView: View {
         isEditingTitle = true
     }
 
-    private func currentPageImage() -> UIImage? {
+    private func currentPageImage() async -> UIImage? {
         guard sortedPages.indices.contains(selectedPageIndex) else { return nil }
         let page = sortedPages[selectedPageIndex]
-        guard let image = UIImage(data: page.imageData) else { return nil }
-        let filter = ImageFilterType(rawValue: page.filterType) ?? .original
-        return ImageFilterEngine.apply(filter, to: image)
+        let imageData = page.imageData
+        let filterTypeRaw = page.filterType
+        return await Task.detached(priority: .userInitiated) {
+            guard let image = UIImage(data: imageData) else { return nil }
+            let filter = ImageFilterType(rawValue: filterTypeRaw) ?? .original
+            return ImageFilterEngine.apply(filter, to: image)
+        }.value
     }
 
     private func makePDFShareURL() async -> URL? {
@@ -134,7 +132,7 @@ struct DocumentDetailView: View {
     }
 
     private func saveCurrentPageToPhotos() async {
-        guard let image = currentPageImage() else { return }
+        guard let image = await currentPageImage() else { return }
         do {
             try await PhotoLibraryExporter.save(image)
             saveResultMessage = "Saved to Photos."

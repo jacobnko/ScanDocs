@@ -5,13 +5,24 @@ struct FilterPickerView: View {
     let originalImage: UIImage
     @Binding var selectedFilter: ImageFilterType
 
+    @State private var previewImage: UIImage?
+
     var body: some View {
         VStack(spacing: 16) {
-            Image(uiImage: ImageFilterEngine.apply(selectedFilter, to: originalImage))
-                .resizable()
-                .scaledToFit()
-                .frame(height: 320)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+            Group {
+                if let previewImage {
+                    Image(uiImage: previewImage)
+                        .resizable()
+                        .scaledToFit()
+                } else {
+                    ProgressView()
+                }
+            }
+            .frame(height: 320)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .task(id: selectedFilter) {
+                previewImage = await Self.render(filter: selectedFilter, image: originalImage)
+            }
 
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
@@ -30,6 +41,12 @@ struct FilterPickerView: View {
         }
         .frame(width: 380)
     }
+
+    fileprivate static func render(filter: ImageFilterType, image: UIImage) async -> UIImage {
+        await Task.detached(priority: .userInitiated) {
+            ImageFilterEngine.apply(filter, to: image)
+        }.value
+    }
 }
 
 private struct FilterThumbnailButton: View {
@@ -38,24 +55,35 @@ private struct FilterThumbnailButton: View {
     let isSelected: Bool
     let action: () -> Void
 
+    @State private var thumbnail: UIImage?
+
     var body: some View {
         Button(action: action) {
             VStack(spacing: 6) {
-                Image(uiImage: ImageFilterEngine.apply(filter, to: image))
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 64, height: 80)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .overlay {
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(isSelected ? Color.accentColor : .clear, lineWidth: 2)
+                Group {
+                    if let thumbnail {
+                        Image(uiImage: thumbnail)
+                            .resizable()
+                            .scaledToFill()
+                    } else {
+                        Color.secondary.opacity(0.15)
                     }
+                }
+                .frame(width: 64, height: 80)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(isSelected ? Color.accentColor : .clear, lineWidth: 2)
+                }
                 Text(filter.displayName)
                     .font(.caption2)
                     .foregroundStyle(isSelected ? Color.accentColor : .secondary)
             }
         }
         .buttonStyle(.plain)
+        .task {
+            thumbnail = await FilterPickerView.render(filter: filter, image: image)
+        }
     }
 }
 

@@ -6,6 +6,8 @@ struct EditablePage: Identifiable {
     let id = UUID()
     var image: UIImage
     var filter: ImageFilterType = .auto
+    // 크롭/회전으로 image가 바뀔 때마다 올려서 썸네일 캐시를 무효화하는 용도
+    var version = 0
 }
 
 struct DocumentEditorView: View {
@@ -117,6 +119,7 @@ struct DocumentEditorView: View {
                     onApply: { newImage in
                         if let index = pages.firstIndex(where: { $0.id == selectedPage.id }) {
                             pages[index].image = newImage
+                            pages[index].version += 1
                         }
                         isShowingCropRotate = false
                     },

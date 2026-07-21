@@ -1,4 +1,4 @@
-// 저장된 스캔 문서를 카드 그리드로 보여주는 홈 화면
+// 저장된 스캔 문서 목록을 보여주는 홈 화면
 import SwiftUI
 import SwiftData
 import VisionKit
@@ -7,18 +7,15 @@ struct DocumentListView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \ScannedDocument.createdAt, order: .reverse) private var documents: [ScannedDocument]
 
-    @State private var navigationPath = NavigationPath()
     @State private var isShowingScanner = false
     @State private var isShowingUnsupportedAlert = false
     @State private var isShowingEditor = false
     @State private var pagesPendingEdit: [UIImage] = []
     @State private var searchText = ""
-    @State private var isSelecting = false
+    @State private var editMode: EditMode = .inactive
     @State private var selectedDocumentIDs = Set<UUID>()
     @State private var isShowingShareSheet = false
     @State private var shareItems: [Any] = []
-
-    private let columns = [GridItem(.flexible(), spacing: 16), GridItem(.flexible(), spacing: 16)]
 
     // 제목뿐 아니라 OCR로 추출해둔 페이지 본문 텍스트까지 검색 대상에 포함
     private var filteredDocuments: [ScannedDocument] {
@@ -30,16 +27,23 @@ struct DocumentListView: View {
     }
 
     var body: some View {
-        NavigationStack(path: $navigationPath) {
-            ScrollView {
-                LazyVGrid(columns: columns, spacing: 20) {
-                    ForEach(filteredDocuments) { document in
-                        cardButton(for: document)
+        NavigationStack {
+            List(selection: $selectedDocumentIDs) {
+                ForEach(filteredDocuments) { document in
+                    NavigationLink(value: document) {
+                        let firstPage = document.pages.min { $0.order < $1.order }
+                        DocumentRowView(
+                            title: document.title,
+                            pageCount: document.pages.count,
+                            createdAt: document.createdAt,
+                            thumbnailData: firstPage?.imageData,
+                            thumbnailFilterType: firstPage?.filterType ?? ImageFilterType.original.rawValue
+                        )
                     }
                 }
-                .padding(16)
+                .onDelete(perform: deleteDocuments)
             }
-            .background(Color(.systemGroupedBackground))
+            .environment(\.editMode, $editMode)
             .overlay {
                 if documents.isEmpty {
                     emptyState
@@ -51,15 +55,16 @@ struct DocumentListView: View {
                 DocumentDetailView(document: document)
             }
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    EditButton()
+                }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(isSelecting ? "Done" : "Select") {
-                        isSelecting.toggle()
-                        if !isSelecting { selectedDocumentIDs.removeAll() }
+                    Button(action: startScan) {
+                        Image(systemName: "camera.fill")
                     }
-                    .disabled(documents.isEmpty)
                 }
                 ToolbarItemGroup(placement: .bottomBar) {
-                    if isSelecting {
+                    if editMode == .active {
                         Button(role: .destructive, action: deleteSelected) {
                             Label("Delete", systemImage: "trash")
                         }
@@ -74,11 +79,6 @@ struct DocumentListView: View {
                         }
                         .disabled(selectedDocumentIDs.isEmpty)
                     }
-                }
-            }
-            .overlay(alignment: .bottomTrailing) {
-                if !isSelecting {
-                    scanButton
                 }
             }
         }
@@ -122,58 +122,6 @@ struct DocumentListView: View {
         documents.filter { selectedDocumentIDs.contains($0.id) }
     }
 
-    private func cardButton(for document: ScannedDocument) -> some View {
-        Button {
-            if isSelecting {
-                toggleSelection(document.id)
-            } else {
-                navigationPath.append(document)
-            }
-        } label: {
-            DocumentCardView(
-                thumbnail: thumbnail(for: document),
-                title: document.title,
-                pageCount: document.pages.count,
-                createdAt: document.createdAt,
-                isSelecting: isSelecting,
-                isSelected: selectedDocumentIDs.contains(document.id)
-            )
-        }
-        .buttonStyle(PressableButtonStyle())
-        .contextMenu {
-            Button {
-                Task { await sharePDFs(for: [document]) }
-            } label: {
-                Label("Share PDF", systemImage: "square.and.arrow.up")
-            }
-            Button(role: .destructive) {
-                modelContext.delete(document)
-            } label: {
-                Label("Delete", systemImage: "trash")
-            }
-        }
-    }
-
-    private var scanButton: some View {
-        Button(action: startScan) {
-            Image(systemName: "camera.fill")
-                .font(.title2.weight(.semibold))
-                .foregroundStyle(.white)
-                .frame(width: 60, height: 60)
-                .background(
-                    LinearGradient(
-                        colors: [Color.accentColor, Color.accentColor.opacity(0.75)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .clipShape(Circle())
-                .shadow(color: Color.accentColor.opacity(0.45), radius: 12, y: 6)
-        }
-        .buttonStyle(PressableButtonStyle())
-        .padding(24)
-    }
-
     private var emptyState: some View {
         VStack(spacing: 16) {
             ZStack {
@@ -211,14 +159,6 @@ struct DocumentListView: View {
         }
     }
 
-    private func toggleSelection(_ id: UUID) {
-        if selectedDocumentIDs.contains(id) {
-            selectedDocumentIDs.remove(id)
-        } else {
-            selectedDocumentIDs.insert(id)
-        }
-    }
-
     private func startScan() {
         guard VNDocumentCameraViewController.isSupported else {
             isShowingUnsupportedAlert = true
@@ -226,13 +166,6 @@ struct DocumentListView: View {
         }
         Haptics.impact(.medium)
         isShowingScanner = true
-    }
-
-    private func thumbnail(for document: ScannedDocument) -> UIImage? {
-        guard let firstPage = document.pages.min(by: { $0.order < $1.order }),
-              let image = UIImage(data: firstPage.imageData) else { return nil }
-        let filter = ImageFilterType(rawValue: firstPage.filterType) ?? .original
-        return ImageFilterEngine.apply(filter, to: image)
     }
 
     // 편집 화면에서 확정된 페이지들(필터 종류 포함)을 OCR 처리 후 SwiftData에 저장
@@ -255,12 +188,18 @@ struct DocumentListView: View {
         Haptics.success()
     }
 
+    private func deleteDocuments(at offsets: IndexSet) {
+        for index in offsets {
+            modelContext.delete(filteredDocuments[index])
+        }
+    }
+
     private func deleteSelected() {
         for document in selectedDocuments {
             modelContext.delete(document)
         }
         selectedDocumentIDs.removeAll()
-        isSelecting = false
+        editMode = .inactive
     }
 
     private func sharePDFs(for docs: [ScannedDocument]) async {

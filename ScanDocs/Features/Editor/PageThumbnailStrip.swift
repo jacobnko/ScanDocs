@@ -10,15 +10,21 @@ struct PageThumbnailStrip: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
                 ForEach(pages) { page in
-                    thumbnail(for: page)
-                        .onDrag {
-                            draggedPage = page
-                            return NSItemProvider(object: page.id.uuidString as NSString)
-                        }
-                        .onDrop(
-                            of: [.text],
-                            delegate: PageDropDelegate(item: page, pages: $pages, draggedPage: $draggedPage)
-                        )
+                    PageThumbnailCell(
+                        page: page,
+                        isSelected: page.id == selectedPageID,
+                        canDelete: pages.count > 1,
+                        onSelect: { selectedPageID = page.id },
+                        onDelete: { delete(page) }
+                    )
+                    .onDrag {
+                        draggedPage = page
+                        return NSItemProvider(object: page.id.uuidString as NSString)
+                    }
+                    .onDrop(
+                        of: [.text],
+                        delegate: PageDropDelegate(item: page, pages: $pages, draggedPage: $draggedPage)
+                    )
                 }
             }
             .padding(.horizontal, 4)
@@ -26,24 +32,45 @@ struct PageThumbnailStrip: View {
         .frame(width: 380, height: 100)
     }
 
-    private func thumbnail(for page: EditablePage) -> some View {
-        let isSelected = page.id == selectedPageID
-        return ZStack(alignment: .topTrailing) {
-            Image(uiImage: ImageFilterEngine.apply(page.filter, to: page.image))
-                .resizable()
-                .scaledToFill()
-                .frame(width: 64, height: 84)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-                .overlay {
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(isSelected ? Color.accentColor : .clear, lineWidth: 2)
-                }
-                .onTapGesture { selectedPageID = page.id }
+    private func delete(_ page: EditablePage) {
+        pages.removeAll { $0.id == page.id }
+        if selectedPageID == page.id {
+            selectedPageID = pages.first?.id
+        }
+    }
+}
 
-            if pages.count > 1 {
-                Button {
-                    delete(page)
-                } label: {
+// 필터/크롭 결과를 백그라운드에서 렌더링하고 캐시해 드래그·삭제 중 메인 스레드가 멈추지 않게 함
+private struct PageThumbnailCell: View {
+    let page: EditablePage
+    let isSelected: Bool
+    let canDelete: Bool
+    let onSelect: () -> Void
+    let onDelete: () -> Void
+
+    @State private var thumbnail: UIImage?
+
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+            Group {
+                if let thumbnail {
+                    Image(uiImage: thumbnail)
+                        .resizable()
+                        .scaledToFill()
+                } else {
+                    Color.secondary.opacity(0.15)
+                }
+            }
+            .frame(width: 64, height: 84)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay {
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(isSelected ? Color.accentColor : .clear, lineWidth: 2)
+            }
+            .onTapGesture(perform: onSelect)
+
+            if canDelete {
+                Button(action: onDelete) {
                     Image(systemName: "xmark.circle.fill")
                         .symbolRenderingMode(.palette)
                         .foregroundStyle(.white, .black.opacity(0.6))
@@ -51,12 +78,12 @@ struct PageThumbnailStrip: View {
                 .offset(x: 6, y: -6)
             }
         }
-    }
-
-    private func delete(_ page: EditablePage) {
-        pages.removeAll { $0.id == page.id }
-        if selectedPageID == page.id {
-            selectedPageID = pages.first?.id
+        .task(id: "\(page.filter.rawValue)-\(page.version)") {
+            let image = page.image
+            let filter = page.filter
+            thumbnail = await Task.detached(priority: .userInitiated) {
+                ImageFilterEngine.apply(filter, to: image)
+            }.value
         }
     }
 }
